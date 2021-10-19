@@ -16,26 +16,23 @@ razao5Centavos = diametro5Centavos / diametro1Real
 
 def main():
     
+    # Definindo variaveis
     input = cv2.imread('moeda8.png')
-    
     processado = input.copy() 
     output = input.copy()
-
     somaMoedas = 0
     
-    (processado, output, somaMoedas) = processar1Real(input, processado, output, somaMoedas)
+    (processado, output, somaMoedas, media1Real) = processar1Real(input, processado, output, somaMoedas)
     (processado, output, somaMoedas) = processar50Centavos(processado, output, somaMoedas)
     # (processado, output, somaMoedas) = processarRestante(processado, output, somaMoedas)
 
     # cv2.imshow("input", input)
-    # cv2.imshow("processado", processado)
-    cv2.putText(output, "Total: R$ " + str(somaMoedas), (50, 50), cv2.FONT_HERSHEY_DUPLEX, 0.75, (0, 0, 0), 1)    
-    cv2.imshow("output", output)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    instrucoesFinais(processado, output, somaMoedas, media1Real)
 
+    
 def processar1Real(input, processado, output, somaMoedas):
 
+    media1Real = 0;
     hsv = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
     hsv = cv2.medianBlur(hsv, 9)
     
@@ -48,11 +45,12 @@ def processar1Real(input, processado, output, somaMoedas):
     
     for (x, y, r) in detected_circles[0, :]:
         cv2.circle(output, (x, y), r, (0, 255, 0), 3)
-        cv2.putText(output, str(float(r)), (x, y), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0, 0, 0), 1)
-        cv2.circle(processado, (x + 5, y + 5), r + 5, (255, 0, 0), cv2.FILLED)
+        cv2.circle(processado, (x, y), r, (255, 0, 0), cv2.FILLED)
         somaMoedas += 1
-        
-    return processado, output, somaMoedas
+        media1Real += float(r) 
+    
+    media1Real /= somaMoedas
+    return processado, output, somaMoedas, media1Real
     
     
 def processar50Centavos(processado, output, somaMoedas):
@@ -69,9 +67,8 @@ def processar50Centavos(processado, output, somaMoedas):
         detected_circles = np.uint16(np.around(circles))
          
         for (x, y, r) in detected_circles[0, :]:
-            cv2.circle(output, (x, y), r, (0, 255, 0), 3)
-            cv2.putText(output, str(float(r)), (x, y), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0, 0, 0), 1)
-            cv2.circle(processado, (x + 5, y + 5), r + 5, (255, 0, 0), cv2.FILLED)
+            cv2.circle(output, (x, y), r, (255, 255, 0), 3)
+            cv2.circle(processado, (x, y), r, (255, 0, 0), cv2.FILLED)
             somaMoedas += 0.5
 
     return processado, output, somaMoedas
@@ -92,5 +89,14 @@ def processarRestante(input, processado, output, somaMoedas):
     return processado, output, somaMoedas
     
     
+def instrucoesFinais(processado, output, somaMoedas, media1Real):
+    cv2.imshow("processado", processado)
+    cv2.putText(output, "Total: R$ " + str(somaMoedas), (50, 50), cv2.FONT_HERSHEY_DUPLEX, 0.75, (0, 0, 0), 1)    
+    cv2.putText(output, "Media de R$ 1: " + str(media1Real), (500, 50), cv2.FONT_HERSHEY_DUPLEX, 0.75, (0, 0, 0), 1)    
+    cv2.imshow("output", output)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
 if __name__ == '__main__':
     main()
