@@ -1,1 +1,1 @@
-# EACH 2021 - Computação Gráfica (Recuperação) 
+# EACH 2021 - Computação Gráfica 
